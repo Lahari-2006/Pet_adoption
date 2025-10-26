@@ -12,6 +12,7 @@ export default function AdminLogin() {
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { setIsAdminLoggedIn } = useAuth();
@@ -23,23 +24,40 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setMessage('');
     setError('');
+    setLoading(true);
+
+    if (!config.url) {
+      setError("Backend URL is not defined in config.js");
+      setLoading(false);
+      return;
+    }
 
     try {
+      console.log("Sending login request:", formData);
       const response = await axios.post(`${config.url}/admin/checkadminlogin`, formData);
 
+      console.log("Backend response:", response);
+
       if (response.status === 200 && response.data) {
-        // Set login state to true in context (also persisted in localStorage)
+        setMessage("Login successful!");
         setIsAdminLoggedIn(true);
-        navigate("/adminhome"); // redirect to admin dashboard
+        navigate("/adminhome");
+      } else {
+        setError("Login failed. Check credentials.");
       }
     } catch (error) {
-      if (error.response) {
-        setError(error.response.data); // show backend error (401 or 500)
+      console.error("Login error:", error);
+
+      if (error.response && error.response.data) {
+        setError(error.response.data.message || "Invalid username or password");
       } else {
         setError("An unexpected error occurred.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,8 +69,10 @@ export default function AdminLogin() {
 
       <div className="form-section">
         <h3 style={{ textAlign: "center", textDecoration: "underline" }}>Admin Login</h3>
+
         {message && <p className="success-message">{message}</p>}
         {error && <p className="error-message">{error}</p>}
+        {loading && <p style={{ color: "blue" }}>Logging in...</p>}
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
@@ -77,7 +97,9 @@ export default function AdminLogin() {
             />
           </div>
 
-          <button type="submit" className="button">Login</button>
+          <button type="submit" className="button" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
         </form>
       </div>
     </div>

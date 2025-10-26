@@ -20,7 +20,7 @@ import com.klef.fsd.sdp.service.AdminService;
 
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = {"http://localhost:2000", "http://myfrontend.com"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://myfrontend.com"})
 public class AdminController 
 {
     @Autowired
